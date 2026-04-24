@@ -182,7 +182,7 @@ export default function LandingPage() {
           initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
           {content.pricing.title}
         </motion.h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl">
           {content.pricing.plans.map((plan, i) => (
             <motion.div key={i} className="rounded-2xl overflow-hidden flex flex-col"
               style={{ backgroundColor: plan.highlight ? `${btn}22` : `${btn}0e`, border: `1px solid ${plan.highlight ? accent : btn + '44'}` }}

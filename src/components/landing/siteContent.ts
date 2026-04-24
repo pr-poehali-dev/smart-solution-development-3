@@ -127,6 +127,11 @@ export const defaultContent: SiteContent = {
       { name: 'Кино', duration: '3 часа', price: '4 900 ₽', features: ['До 8 человек', 'Проектор 4K', 'Звук Dolby', 'Пледы и пуфы'], highlight: false },
       { name: 'Звезда', duration: '4 часа', price: '7 900 ₽', features: ['До 12 человек', 'Кино + Кaраоке', 'Проф. микрофон', 'Фуршетная зона', 'Декор в подарок'], highlight: true },
       { name: 'Гала', duration: '6 часов', price: '12 900 ₽', features: ['До 20 человек', 'Полный лофт', 'Живая музыка', 'Бар и фуршет', 'Фото-зона'], highlight: false },
+      { name: 'Свидание', duration: '2 часа', price: '3 200 ₽', features: ['2 человека', 'Романтический декор', 'Проектор 4K', 'Плед и свечи'], highlight: false },
+      { name: 'День рождения', duration: '5 часов', price: '9 900 ₽', features: ['До 15 человек', 'Украшение зала', 'Кино + Кaраоке', 'Фото-зона', 'Торт на стол'], highlight: false },
+      { name: 'Девичник', duration: '4 часа', price: '8 500 ₽', features: ['До 10 человек', 'Тематический декор', 'Кaраоке', 'Игры и конкурсы', 'Фуршет'], highlight: false },
+      { name: 'Корпоратив', duration: '6 часов', price: '14 900 ₽', features: ['До 20 человек', 'Полный лофт', 'Ди-джей или живая музыка', 'Бар и фуршет', 'Фото-зона', 'Ведущий'], highlight: false },
+      { name: 'Мальчишник', duration: '4 часа', price: '8 500 ₽', features: ['До 10 человек', 'Игровая PS5', 'Кaраоке', 'Настольные игры', 'Бар'], highlight: false },
     ],
   },
   schedule: {
