@@ -39,14 +39,31 @@ export default function LandingPage() {
       <EditorPanel content={content} onChange={setContent} />
 
       {/* HEADER */}
-      <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 py-4"
+      <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 md:px-10 py-3 md:py-4"
         style={{ backgroundColor: `${bg}ee`, backdropFilter: 'blur(8px)', borderBottom: `1px solid ${btn}44` }}>
         <div>
           <p className="text-xs tracking-[0.3em] uppercase" style={{ color: accent }}>{content.header.badge}</p>
           <h1 className="text-lg font-bold leading-tight" style={{ color: text }}>{content.header.title}</h1>
-          <p className="text-xs" style={{ color: muted }}>{content.header.subtitle}</p>
+          <p className="text-xs hidden sm:block" style={{ color: muted }}>{content.header.subtitle}</p>
         </div>
-        <button onClick={() => setMenuOpen(true)} className="p-2" style={{ color: accent }}>
+        {/* Desktop nav */}
+        <nav className="hidden md:flex items-center gap-1">
+          {NAV_ITEMS.filter(i => !i.highlight).map(item => (
+            <button key={item.href}
+              onClick={() => scrollTo(item.href)}
+              className="px-3 py-1.5 rounded-lg text-sm transition-all hover:opacity-80"
+              style={{ color: muted }}>
+              {item.label}
+            </button>
+          ))}
+          <button onClick={() => setBookingOpen(true)}
+            className="ml-2 px-5 py-2 rounded-full text-sm font-bold transition-all hover:opacity-90"
+            style={{ backgroundColor: btn, color: btnTxt }}>
+            Забронировать
+          </button>
+        </nav>
+        {/* Mobile burger */}
+        <button onClick={() => setMenuOpen(true)} className="md:hidden p-2" style={{ color: accent }}>
           <Icon name="Menu" size={26} />
         </button>
       </header>
@@ -102,7 +119,7 @@ export default function LandingPage() {
       </AnimatePresence>
 
       {/* HERO */}
-      <section id="hero" className="relative min-h-screen flex flex-col justify-end pb-16 px-5 md:px-12"
+      <section id="hero" className="relative min-h-screen flex flex-col justify-end pb-28 md:pb-20 px-5 md:px-12"
         style={{ paddingTop: '80px' }}>
         <div className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${content.hero.bgImage})` }} />
@@ -128,26 +145,36 @@ export default function LandingPage() {
       </section>
 
       {/* О НАС */}
-      <section id="about" className="px-5 md:px-12 py-16 md:py-24 max-w-3xl">
+      <section id="about" className="px-5 md:px-12 py-16 md:py-24 max-w-5xl">
         <motion.h2 className="text-3xl md:text-5xl font-bold leading-tight mb-8" style={{ color: text }}
           initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
           {content.about.title}
         </motion.h2>
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}>
-          <p className="mb-4" style={{ color: muted }}>{content.about.listTitle}</p>
-          <ul className="space-y-2" style={{ color: accent }}>
-            {content.about.items.map((item) => (
-              <li key={item} className="flex items-start gap-2" style={{ color: `${text}cc` }}>
-                <span style={{ color: accent }}>—</span> {item}
-              </li>
-            ))}
-          </ul>
-          <button onClick={() => setBookingOpen(true)}
-            className="mt-8 px-8 py-4 rounded-full font-bold transition-all"
-            style={{ backgroundColor: btn, color: btnTxt }}>
-            {content.about.buttonText}
-          </button>
-        </motion.div>
+        <div className="md:grid md:grid-cols-2 md:gap-12">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}>
+            <p className="mb-4 font-semibold" style={{ color: muted }}>{content.about.listTitle}</p>
+            <ul className="space-y-2">
+              {content.about.items.map((item) => (
+                <li key={item} className="flex items-start gap-2 text-sm md:text-base" style={{ color: `${text}cc` }}>
+                  <span className="mt-0.5 flex-shrink-0" style={{ color: accent }}>—</span> {item}
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+          <motion.div className="mt-8 md:mt-0 flex flex-col justify-center" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.35 }}>
+            <div className="rounded-2xl p-6 md:p-8 mb-6" style={{ backgroundColor: `${btn}18`, border: `1px solid ${btn}33` }}>
+              <p className="text-sm leading-relaxed" style={{ color: `${text}bb` }}>
+                Каждая компания найдёт занятие по душе — от тихого кино до зажигательного
+                корпоратива. Бронируй любой формат без ограничений.
+              </p>
+            </div>
+            <button onClick={() => setBookingOpen(true)}
+              className="px-8 py-4 rounded-full font-bold transition-all self-start"
+              style={{ backgroundColor: btn, color: btnTxt }}>
+              {content.about.buttonText}
+            </button>
+          </motion.div>
+        </div>
       </section>
 
       {/* ПРЕИМУЩЕСТВА */}
@@ -182,10 +209,10 @@ export default function LandingPage() {
           initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
           {content.pricing.title}
         </motion.h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl">
+        <div className="flex gap-4 overflow-x-auto pb-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:overflow-visible" style={{ scrollSnapType: 'x mandatory' }}>
           {content.pricing.plans.map((plan, i) => (
-            <motion.div key={i} className="rounded-2xl overflow-hidden flex flex-col"
-              style={{ backgroundColor: plan.highlight ? `${btn}22` : `${btn}0e`, border: `1px solid ${plan.highlight ? accent : btn + '44'}` }}
+            <motion.div key={i} className="rounded-2xl overflow-hidden flex flex-col flex-shrink-0 w-72 md:w-auto"
+              style={{ backgroundColor: plan.highlight ? `${btn}22` : `${btn}0e`, border: `1px solid ${plan.highlight ? accent : btn + '44'}`, scrollSnapAlign: 'start' }}
               initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
               {plan.image && (
                 <div className="w-full h-40 bg-cover bg-center flex-shrink-0"
@@ -287,11 +314,17 @@ export default function LandingPage() {
       </section>
 
       {/* FOOTER */}
-      <footer className="px-5 md:px-12 py-8 text-center text-xs" style={{ borderTop: `1px solid ${btn}33`, color: `${muted}88` }}>
-        © 2024 {content.header.title} · {content.header.subtitle}
+      <footer className="px-5 md:px-12 py-8 md:flex md:items-center md:justify-between text-xs mb-20 md:mb-0"
+        style={{ borderTop: `1px solid ${btn}33`, color: `${muted}88` }}>
+        <span>© 2024 {content.header.title} · {content.header.subtitle}</span>
+        <div className="hidden md:flex items-center gap-4 mt-0">
+          <a href={`tel:${content.header.phone.replace(/\s/g, '')}`} style={{ color: muted }}>{content.header.phone}</a>
+          <a href={content.header.telegramUrl} target="_blank" rel="noreferrer" style={{ color: accent }}>Telegram</a>
+          <a href={content.header.whatsappUrl} target="_blank" rel="noreferrer" style={{ color: accent }}>WhatsApp</a>
+        </div>
       </footer>
 
-      {/* STICKY BOOKING */}
+      {/* STICKY BOOKING — только мобиль */}
       <div className="fixed bottom-0 left-0 right-0 z-40 p-4 md:hidden"
         style={{ background: `linear-gradient(to top, ${bg} 60%, transparent)` }}>
         <button onClick={() => setBookingOpen(true)}
