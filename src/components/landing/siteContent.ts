@@ -1,5 +1,14 @@
+export type SectionId = 'hero' | 'about' | 'features' | 'pricing' | 'schedule' | 'contacts'
+export type Alignment = 'left' | 'center' | 'right'
+
+export interface SectionConfig {
+  id: SectionId
+  visible: boolean
+  order: number
+  align: Alignment
+}
+
 export interface SiteContent {
-  // Глобальные стили
   global: {
     bgColor: string
     accentColor: string
@@ -9,7 +18,6 @@ export interface SiteContent {
     buttonTextColor: string
     fontFamily: string
   }
-  // Шапка
   header: {
     badge: string
     title: string
@@ -19,27 +27,23 @@ export interface SiteContent {
     telegramUrl: string
     whatsappUrl: string
   }
-  // Герой
   hero: {
     bgImage: string
     label: string
     title: string
     buttonText: string
   }
-  // О нас
   about: {
     title: string
     listTitle: string
     items: string[]
     buttonText: string
   }
-  // Преимущества
   features: {
     title: string
     items: string[]
     buttonText: string
   }
-  // Тарифы
   pricing: {
     title: string
     plans: {
@@ -51,7 +55,6 @@ export interface SiteContent {
       image?: string
     }[]
   }
-  // График
   schedule: {
     title: string
     scheduleTitle: string
@@ -61,13 +64,28 @@ export interface SiteContent {
     priceWeekday: string
     buttonText: string
   }
-  // Контакты
   contacts: {
     title: string
     phone: string
     address: string
   }
+  notifications: {
+    emailEnabled: boolean
+    email: string
+    telegramEnabled: boolean
+    telegramChatId: string
+  }
+  sections: SectionConfig[]
 }
+
+export const defaultSections: SectionConfig[] = [
+  { id: 'hero', visible: true, order: 0, align: 'left' },
+  { id: 'about', visible: true, order: 1, align: 'left' },
+  { id: 'features', visible: true, order: 2, align: 'center' },
+  { id: 'pricing', visible: true, order: 3, align: 'left' },
+  { id: 'schedule', visible: true, order: 4, align: 'left' },
+  { id: 'contacts', visible: true, order: 5, align: 'left' },
+]
 
 export const defaultContent: SiteContent = {
   global: {
@@ -148,6 +166,13 @@ export const defaultContent: SiteContent = {
     phone: '+7 999 123-45-67',
     address: 'Москва, ул. Примерная, д. 1',
   },
+  notifications: {
+    emailEnabled: false,
+    email: '',
+    telegramEnabled: false,
+    telegramChatId: '',
+  },
+  sections: defaultSections,
 }
 
 const STORAGE_KEY = 'amywh_content'
@@ -155,9 +180,17 @@ const STORAGE_KEY = 'amywh_content'
 export function loadContent(): SiteContent {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return { ...defaultContent, ...JSON.parse(raw) }
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      return {
+        ...defaultContent,
+        ...parsed,
+        sections: parsed.sections ?? defaultSections,
+        notifications: parsed.notifications ?? defaultContent.notifications,
+      }
+    }
   } catch (_e) {
-    // ignore parse errors
+    // ignore
   }
   return defaultContent
 }

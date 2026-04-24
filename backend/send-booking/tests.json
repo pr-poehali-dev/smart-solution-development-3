@@ -1,0 +1,26 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Send booking (no channels enabled)",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "name": "Тест",
+        "phone": "+7 900 000-00-00",
+        "date": "2026-05-01",
+        "plan": "Кино",
+        "emailEnabled": false,
+        "telegramEnabled": false
+      },
+      "expectedStatus": 200,
+      "expectedBody": "ok",
+      "bodyMatcher": "contains"
+    }
+  ]
+}

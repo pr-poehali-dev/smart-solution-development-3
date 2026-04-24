@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import Icon from '@/components/ui/icon'
-import type { SiteContent } from './siteContent'
+import type { SiteContent, SectionConfig, Alignment } from './siteContent'
 import { saveContent, resetContent, defaultContent } from './siteContent'
 
 const FONTS = [
@@ -13,6 +13,7 @@ const FONTS = [
 ]
 
 const TABS = [
+  { id: 'sections', label: 'Разделы', icon: 'LayoutList' },
   { id: 'global', label: 'Стиль', icon: 'Palette' },
   { id: 'header', label: 'Шапка', icon: 'LayoutTemplate' },
   { id: 'hero', label: 'Герой', icon: 'Image' },
@@ -21,6 +22,7 @@ const TABS = [
   { id: 'pricing', label: 'Тарифы', icon: 'CreditCard' },
   { id: 'schedule', label: 'График', icon: 'Clock' },
   { id: 'contacts', label: 'Контакты', icon: 'Phone' },
+  { id: 'notifications', label: 'Заявки', icon: 'Bell' },
 ] as const
 
 type TabId = typeof TABS[number]['id']
@@ -30,7 +32,9 @@ interface Props {
   onChange: (c: SiteContent) => void
 }
 
-function Field({ label, value, onChange, multiline = false }: { label: string; value: string; onChange: (v: string) => void; multiline?: boolean }) {
+function Field({ label, value, onChange, multiline = false, type = 'text' }: {
+  label: string; value: string; onChange: (v: string) => void; multiline?: boolean; type?: string
+}) {
   return (
     <div className="mb-3">
       <label className="block text-xs mb-1" style={{ color: '#a08088' }}>{label}</label>
@@ -44,13 +48,31 @@ function Field({ label, value, onChange, multiline = false }: { label: string; v
         />
       ) : (
         <input
-          type="text"
+          type={type}
           value={value}
           onChange={e => onChange(e.target.value)}
           className="w-full px-3 py-2 rounded-lg text-sm outline-none"
           style={{ backgroundColor: '#1a0a0f', border: '1px solid #3a1a22', color: '#f0d9de' }}
         />
       )}
+    </div>
+  )
+}
+
+function Toggle({ label, value, onChange }: { label: string; value: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <div className="mb-3 flex items-center justify-between">
+      <label className="text-xs" style={{ color: '#a08088' }}>{label}</label>
+      <button
+        onClick={() => onChange(!value)}
+        className="relative w-10 h-5 rounded-full transition-all flex-shrink-0"
+        style={{ backgroundColor: value ? '#7a2035' : '#2a1018', border: '1px solid #3a1a22' }}
+      >
+        <span
+          className="absolute top-0.5 w-4 h-4 rounded-full transition-all"
+          style={{ backgroundColor: value ? '#f0d9de' : '#a08088', left: value ? '22px' : '2px' }}
+        />
+      </button>
     </div>
   )
 }
@@ -99,7 +121,7 @@ function ImageField({ label, value, onChange }: { label: string; value: string; 
         <div className="w-full h-24 rounded-lg mb-2 bg-cover bg-center overflow-hidden"
           style={{ backgroundImage: `url(${value})`, border: '1px solid #3a1a22' }} />
       )}
-      <div className="flex gap-2">
+      <div className="flex gap-2 mb-2">
         <button
           onClick={() => fileRef.current?.click()}
           className="flex-1 py-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1 transition-all"
@@ -114,20 +136,36 @@ function ImageField({ label, value, onChange }: { label: string; value: string; 
 }
 
 function ListField({ label, items, onChange }: { label: string; items: string[]; onChange: (v: string[]) => void }) {
-  const update = (i: number, v: string) => {
-    const next = [...items]
-    next[i] = v
-    onChange(next)
-  }
+  const update = (i: number, v: string) => { const next = [...items]; next[i] = v; onChange(next) }
   const add = () => onChange([...items, ''])
   const remove = (i: number) => onChange(items.filter((_, idx) => idx !== i))
+  const moveUp = (i: number) => {
+    if (i === 0) return
+    const next = [...items]
+    ;[next[i - 1], next[i]] = [next[i], next[i - 1]]
+    onChange(next)
+  }
+  const moveDown = (i: number) => {
+    if (i === items.length - 1) return
+    const next = [...items]
+    ;[next[i], next[i + 1]] = [next[i + 1], next[i]]
+    onChange(next)
+  }
 
   return (
     <div className="mb-3">
       <label className="block text-xs mb-2" style={{ color: '#a08088' }}>{label}</label>
       <div className="space-y-2">
         {items.map((item, i) => (
-          <div key={i} className="flex gap-2">
+          <div key={i} className="flex gap-1 items-center">
+            <div className="flex flex-col gap-0.5">
+              <button onClick={() => moveUp(i)} className="p-0.5" style={{ color: i === 0 ? '#3a1a22' : '#a08088' }}>
+                <Icon name="ChevronUp" size={12} />
+              </button>
+              <button onClick={() => moveDown(i)} className="p-0.5" style={{ color: i === items.length - 1 ? '#3a1a22' : '#a08088' }}>
+                <Icon name="ChevronDown" size={12} />
+              </button>
+            </div>
             <input
               type="text"
               value={item}
@@ -141,19 +179,108 @@ function ListField({ label, items, onChange }: { label: string; items: string[];
           </div>
         ))}
       </div>
-      <button
-        onClick={add}
-        className="mt-2 text-xs flex items-center gap-1 transition-all"
-        style={{ color: '#c4748a' }}>
+      <button onClick={add} className="mt-2 text-xs flex items-center gap-1" style={{ color: '#c4748a' }}>
         <Icon name="Plus" size={13} /> Добавить пункт
       </button>
     </div>
   )
 }
 
+const SECTION_LABELS: Record<string, string> = {
+  hero: 'Главный экран',
+  about: 'О нас',
+  features: 'Преимущества',
+  pricing: 'Тарифы',
+  schedule: 'График работы',
+  contacts: 'Контакты',
+}
+
+function SectionsTab({ sections, onChange }: {
+  sections: SectionConfig[]
+  onChange: (s: SectionConfig[]) => void
+}) {
+  const sorted = [...sections].sort((a, b) => a.order - b.order)
+
+  const updateSection = (id: string, patch: Partial<SectionConfig>) => {
+    onChange(sections.map(s => s.id === id ? { ...s, ...patch } : s))
+  }
+
+  const moveSection = (idx: number, dir: -1 | 1) => {
+    const next = [...sorted]
+    const targetIdx = idx + dir
+    if (targetIdx < 0 || targetIdx >= next.length) return
+    const tmp = next[idx].order
+    next[idx] = { ...next[idx], order: next[targetIdx].order }
+    next[targetIdx] = { ...next[targetIdx], order: tmp }
+    onChange(next)
+  }
+
+  const ALIGNS: { v: Alignment; icon: string; label: string }[] = [
+    { v: 'left', icon: 'AlignLeft', label: 'Лево' },
+    { v: 'center', icon: 'AlignCenter', label: 'Центр' },
+    { v: 'right', icon: 'AlignRight', label: 'Право' },
+  ]
+
+  return (
+    <div>
+      <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#c4748a' }}>Управление разделами</p>
+      <p className="text-xs mb-4" style={{ color: '#a08088' }}>Скрывай, переставляй и выравнивай разделы</p>
+      <div className="space-y-3">
+        {sorted.map((sec, idx) => (
+          <div key={sec.id} className="rounded-xl p-3" style={{ border: `1px solid ${sec.visible ? '#3a1a22' : '#1a0a0f'}`, backgroundColor: '#110609' }}>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold" style={{ color: sec.visible ? '#f0d9de' : '#a08088' }}>
+                  {SECTION_LABELS[sec.id]}
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <button onClick={() => moveSection(idx, -1)} className="p-1 rounded" style={{ color: idx === 0 ? '#2a1018' : '#a08088' }}>
+                  <Icon name="ChevronUp" size={15} />
+                </button>
+                <button onClick={() => moveSection(idx, 1)} className="p-1 rounded" style={{ color: idx === sorted.length - 1 ? '#2a1018' : '#a08088' }}>
+                  <Icon name="ChevronDown" size={15} />
+                </button>
+                <button
+                  onClick={() => updateSection(sec.id, { visible: !sec.visible })}
+                  className="p-1 rounded ml-1"
+                  style={{ color: sec.visible ? '#c4748a' : '#3a1a22' }}
+                >
+                  <Icon name={sec.visible ? 'Eye' : 'EyeOff'} size={16} />
+                </button>
+              </div>
+            </div>
+            {sec.visible && (
+              <div>
+                <p className="text-xs mb-1" style={{ color: '#a08088' }}>Выравнивание текста</p>
+                <div className="flex gap-1">
+                  {ALIGNS.map(a => (
+                    <button
+                      key={a.v}
+                      onClick={() => updateSection(sec.id, { align: a.v })}
+                      className="flex-1 py-1.5 rounded-lg text-xs flex items-center justify-center gap-1 transition-all"
+                      style={{
+                        backgroundColor: sec.align === a.v ? '#7a2035' : '#2a1018',
+                        color: sec.align === a.v ? '#f0d9de' : '#a08088',
+                        border: `1px solid ${sec.align === a.v ? '#c4748a' : '#3a1a22'}`,
+                      }}
+                    >
+                      <Icon name={a.icon as 'AlignLeft'} size={13} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function EditorPanel({ content, onChange }: Props) {
   const [open, setOpen] = useState(false)
-  const [tab, setTab] = useState<TabId>('global')
+  const [tab, setTab] = useState<TabId>('sections')
   const [saved, setSaved] = useState(false)
 
   const set = <K extends keyof SiteContent>(section: K, patch: Partial<SiteContent[K]>) => {
@@ -175,7 +302,6 @@ export default function EditorPanel({ content, onChange }: Props) {
 
   return (
     <>
-      {/* Кнопка открытия редактора */}
       <button
         onClick={() => setOpen(true)}
         className="fixed bottom-20 right-4 z-50 w-12 h-12 rounded-full flex items-center justify-center shadow-xl transition-all md:bottom-6"
@@ -199,7 +325,6 @@ export default function EditorPanel({ content, onChange }: Props) {
               initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             >
-              {/* Заголовок панели */}
               <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid #1a0a0f' }}>
                 <div>
                   <p className="font-bold text-sm" style={{ color: '#f0d9de' }}>Редактор сайта</p>
@@ -210,7 +335,6 @@ export default function EditorPanel({ content, onChange }: Props) {
                 </button>
               </div>
 
-              {/* Табы секций */}
               <div className="flex overflow-x-auto gap-1 px-3 py-2" style={{ borderBottom: '1px solid #1a0a0f' }}>
                 {TABS.map(t => (
                   <button
@@ -227,8 +351,14 @@ export default function EditorPanel({ content, onChange }: Props) {
                 ))}
               </div>
 
-              {/* Содержимое таба */}
               <div className="flex-1 overflow-y-auto px-4 py-4">
+
+                {tab === 'sections' && (
+                  <SectionsTab
+                    sections={content.sections}
+                    onChange={s => onChange({ ...content, sections: s })}
+                  />
+                )}
 
                 {tab === 'global' && (
                   <div>
@@ -309,34 +439,44 @@ export default function EditorPanel({ content, onChange }: Props) {
                     <Field label="Заголовок раздела" value={content.pricing.title} onChange={v => set('pricing', { title: v })} />
                     {content.pricing.plans.map((plan, i) => (
                       <div key={i} className="mb-4 p-3 rounded-xl" style={{ border: '1px solid #2a1018', backgroundColor: '#110609' }}>
-                        <p className="text-xs font-bold mb-3" style={{ color: '#c4748a' }}>Тариф {i + 1}</p>
+                        <div className="flex items-center justify-between mb-3">
+                          <p className="text-xs font-bold" style={{ color: '#c4748a' }}>{plan.name || `Тариф ${i + 1}`}</p>
+                          <button
+                            onClick={() => {
+                              const plans = content.pricing.plans.filter((_, idx) => idx !== i)
+                              set('pricing', { plans })
+                            }}
+                            className="text-xs px-2 py-1 rounded flex items-center gap-1"
+                            style={{ color: '#7a2035', border: '1px solid #3a1a22' }}>
+                            <Icon name="Trash2" size={12} /> Удалить
+                          </button>
+                        </div>
                         <Field label="Название" value={plan.name} onChange={v => {
-                          const plans = [...content.pricing.plans]
-                          plans[i] = { ...plans[i], name: v }
-                          set('pricing', { plans })
+                          const plans = [...content.pricing.plans]; plans[i] = { ...plans[i], name: v }; set('pricing', { plans })
                         }} />
                         <Field label="Длительность" value={plan.duration} onChange={v => {
-                          const plans = [...content.pricing.plans]
-                          plans[i] = { ...plans[i], duration: v }
-                          set('pricing', { plans })
+                          const plans = [...content.pricing.plans]; plans[i] = { ...plans[i], duration: v }; set('pricing', { plans })
                         }} />
                         <Field label="Цена" value={plan.price} onChange={v => {
-                          const plans = [...content.pricing.plans]
-                          plans[i] = { ...plans[i], price: v }
-                          set('pricing', { plans })
+                          const plans = [...content.pricing.plans]; plans[i] = { ...plans[i], price: v }; set('pricing', { plans })
                         }} />
                         <ListField label="Включено" items={plan.features} onChange={v => {
-                          const plans = [...content.pricing.plans]
-                          plans[i] = { ...plans[i], features: v }
-                          set('pricing', { plans })
+                          const plans = [...content.pricing.plans]; plans[i] = { ...plans[i], features: v }; set('pricing', { plans })
                         }} />
                         <ImageField label="Фото тарифа (необязательно)" value={plan.image || ''} onChange={v => {
-                          const plans = [...content.pricing.plans]
-                          plans[i] = { ...plans[i], image: v }
-                          set('pricing', { plans })
+                          const plans = [...content.pricing.plans]; plans[i] = { ...plans[i], image: v }; set('pricing', { plans })
+                        }} />
+                        <Toggle label="Выделить как популярный" value={plan.highlight} onChange={v => {
+                          const plans = [...content.pricing.plans]; plans[i] = { ...plans[i], highlight: v }; set('pricing', { plans })
                         }} />
                       </div>
                     ))}
+                    <button
+                      onClick={() => set('pricing', { plans: [...content.pricing.plans, { name: 'Новый тариф', duration: '2 часа', price: '0 ₽', features: [], highlight: false }] })}
+                      className="w-full py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all"
+                      style={{ border: '1px dashed #3a1a22', color: '#c4748a' }}>
+                      <Icon name="Plus" size={13} /> Добавить тариф
+                    </button>
                   </div>
                 )}
 
@@ -361,9 +501,61 @@ export default function EditorPanel({ content, onChange }: Props) {
                   </div>
                 )}
 
+                {tab === 'notifications' && (
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#c4748a' }}>Уведомления о заявках</p>
+                    <p className="text-xs mb-4" style={{ color: '#a08088' }}>Куда отправлять уведомления о новых бронированиях</p>
+
+                    <div className="rounded-xl p-3 mb-4" style={{ border: '1px solid #2a1018', backgroundColor: '#110609' }}>
+                      <Toggle
+                        label="Уведомления в Telegram"
+                        value={content.notifications.telegramEnabled}
+                        onChange={v => set('notifications', { telegramEnabled: v })}
+                      />
+                      {content.notifications.telegramEnabled && (
+                        <>
+                          <div className="mt-2 p-3 rounded-lg text-xs" style={{ backgroundColor: '#1a0a0f', color: '#a08088' }}>
+                            <p className="font-semibold mb-1" style={{ color: '#c4748a' }}>Как получить Chat ID:</p>
+                            <p>1. Напишите боту <b>@userinfobot</b> в Telegram</p>
+                            <p>2. Он пришлёт ваш ID (число)</p>
+                            <p className="mt-1">Для группы добавьте бота в группу и напишите там</p>
+                          </div>
+                          <div className="mt-2">
+                            <Field
+                              label="Ваш Telegram Chat ID (число)"
+                              value={content.notifications.telegramChatId}
+                              onChange={v => set('notifications', { telegramChatId: v })}
+                            />
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    <div className="rounded-xl p-3" style={{ border: '1px solid #2a1018', backgroundColor: '#110609' }}>
+                      <Toggle
+                        label="Уведомления на Email"
+                        value={content.notifications.emailEnabled}
+                        onChange={v => set('notifications', { emailEnabled: v })}
+                      />
+                      {content.notifications.emailEnabled && (
+                        <div className="mt-2">
+                          <div className="mb-2 p-3 rounded-lg text-xs" style={{ backgroundColor: '#1a0a0f', color: '#a08088' }}>
+                            Для отправки email нужно настроить почтовый сервис. Пока заявки приходят только в Telegram.
+                          </div>
+                          <Field
+                            label="Ваш email для уведомлений"
+                            value={content.notifications.email}
+                            onChange={v => set('notifications', { email: v })}
+                            type="email"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
               </div>
 
-              {/* Кнопки сохранения */}
               <div className="px-4 py-3 flex gap-2" style={{ borderTop: '1px solid #1a0a0f' }}>
                 <button
                   onClick={handleReset}
@@ -373,9 +565,9 @@ export default function EditorPanel({ content, onChange }: Props) {
                 </button>
                 <button
                   onClick={handleSave}
-                  className="flex-1 py-2 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2"
-                  style={{ backgroundColor: saved ? '#2d6a3f' : '#7a2035', color: '#f0d9de' }}>
-                  {saved ? <><Icon name="Check" size={16} /> Сохранено!</> : <><Icon name="Save" size={16} /> Сохранить</>}
+                  className="flex-1 py-2 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2"
+                  style={{ backgroundColor: saved ? '#1a4a1a' : '#7a2035', color: '#f0d9de' }}>
+                  {saved ? <><Icon name="Check" size={16} /> Сохранено</> : <><Icon name="Save" size={16} /> Сохранить</>}
                 </button>
               </div>
             </motion.div>
