@@ -16,8 +16,9 @@ export default function Section({ id, title, subtitle, content, isActive, showBu
         </motion.div>
       )}
       <motion.h2
-        className="text-4xl md:text-6xl lg:text-[5rem] xl:text-[6rem] font-bold leading-[1.1] tracking-tight max-w-4xl text-white"
-        initial={{ opacity: 0, y: 50 }}
+        className="text-4xl md:text-6xl lg:text-[5rem] xl:text-[6rem] font-bold leading-[1.1] tracking-tight max-w-4xl"
+      style={{ color: '#f0d9de' }}
+      initial={{ opacity: 0, y: 50 }}
         animate={isActive ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.5 }}
       >
@@ -25,7 +26,8 @@ export default function Section({ id, title, subtitle, content, isActive, showBu
       </motion.h2>
       {content && (
         <motion.p
-          className="text-lg md:text-xl lg:text-2xl max-w-2xl mt-6 text-neutral-400"
+          className="text-lg md:text-xl lg:text-2xl max-w-2xl mt-6"
+        style={{ color: '#a08088' }}
           initial={{ opacity: 0, y: 50 }}
           animate={isActive ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5, delay: 0.2 }}
@@ -43,7 +45,7 @@ export default function Section({ id, title, subtitle, content, isActive, showBu
           <Button
             variant="outline"
             size="lg"
-            className="text-[#FF4D00] bg-transparent border-[#FF4D00] hover:bg-[#FF4D00] hover:text-black transition-colors"
+            className="text-[#c4748a] bg-transparent border-[#c4748a] hover:bg-[#7a2035] hover:text-[#f0d9de] hover:border-[#7a2035] transition-all duration-300"
           >
             {buttonText}
           </Button>
