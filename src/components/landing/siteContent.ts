@@ -48,6 +48,7 @@ export interface SiteContent {
       price: string
       features: string[]
       highlight: boolean
+      image?: string
     }[]
   }
   // График

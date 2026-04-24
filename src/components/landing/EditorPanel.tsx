@@ -330,6 +330,11 @@ export default function EditorPanel({ content, onChange }: Props) {
                           plans[i] = { ...plans[i], features: v }
                           set('pricing', { plans })
                         }} />
+                        <ImageField label="Фото тарифа (необязательно)" value={plan.image || ''} onChange={v => {
+                          const plans = [...content.pricing.plans]
+                          plans[i] = { ...plans[i], image: v }
+                          set('pricing', { plans })
+                        }} />
                       </div>
                     ))}
                   </div>

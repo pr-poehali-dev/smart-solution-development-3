@@ -184,9 +184,14 @@ export default function LandingPage() {
         </motion.h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl">
           {content.pricing.plans.map((plan, i) => (
-            <motion.div key={i} className="rounded-2xl p-6 flex flex-col"
+            <motion.div key={i} className="rounded-2xl overflow-hidden flex flex-col"
               style={{ backgroundColor: plan.highlight ? `${btn}22` : `${btn}0e`, border: `1px solid ${plan.highlight ? accent : btn + '44'}` }}
               initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
+              {plan.image && (
+                <div className="w-full h-40 bg-cover bg-center flex-shrink-0"
+                  style={{ backgroundImage: `url(${plan.image})` }} />
+              )}
+              <div className="p-6 flex flex-col flex-1">
               {plan.highlight && (
                 <span className="text-xs font-semibold px-3 py-1 rounded-full self-start mb-3"
                   style={{ backgroundColor: btn, color: btnTxt }}>Популярный</span>
@@ -208,6 +213,7 @@ export default function LandingPage() {
                   : { backgroundColor: 'transparent', color: accent, border: `1px solid ${btn}55` }}>
                 Выбрать
               </button>
+              </div>
             </motion.div>
           ))}
         </div>
